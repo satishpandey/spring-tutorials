@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -46,6 +47,7 @@ public class ItemControllerTests {
 
 	private Item items[] = { new Item(1, "Item 1"), new Item(2, "Item 2") };
 
+	@WithMockUser(value = "user")
 	@Test
 	public void aSaveItems() throws Exception {
 		logger.info("Saving items...");
@@ -54,12 +56,14 @@ public class ItemControllerTests {
 		}
 	}
 
+	@WithMockUser(value = "user")
 	@Test
 	public void bFetchItems() throws Exception {
 		logger.info("Fetching items...");
 		this.fetchItems();
 	}
 
+	@WithMockUser(value = "user")
 	@Test
 	public void cFetchItem() throws Exception {
 		logger.info("Fetch item...");
@@ -68,6 +72,7 @@ public class ItemControllerTests {
 		}
 	}
 
+	@WithMockUser(value = "user")
 	@Test
 	public void dDeleteItems() throws Exception {
 		logger.info("Deleting items...");
@@ -103,8 +108,11 @@ public class ItemControllerTests {
 
 	private void saveItem(Item item) throws Exception {
 
+		String itemJsonStr = objectMapper.writeValueAsString(item);
+		logger.debug(String.format("Requested Item : %s", itemJsonStr));
+
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/saveItem").accept(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsBytes(item)).contentType(MediaType.APPLICATION_JSON);
+				.content(itemJsonStr).contentType(MediaType.APPLICATION_JSON);
 
 		MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 
@@ -120,6 +128,9 @@ public class ItemControllerTests {
 	}
 
 	private void deleteItem(Item item) throws Exception {
+
+		String itemJsonStr = objectMapper.writeValueAsString(item);
+		logger.debug(String.format("Requested Item : %s", itemJsonStr));
 
 		RequestBuilder requestBuilder = MockMvcRequestBuilders.delete(String.format("/deleteItem/%d", item.getCode()))
 				.accept(MediaType.APPLICATION_JSON);
